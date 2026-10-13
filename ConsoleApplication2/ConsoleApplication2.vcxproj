@@ -70,6 +70,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <LocalDebuggerCommandArguments>services.txt</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -145,6 +149,12 @@
   <ItemGroup>
     <ClCompile Include="ConsoleApplication2.cpp" />
     <ClCompile Include="Booking.cpp" />
+    <ClCompile Include="FullPackageService.cpp" />
+    <ClCompile Include="InsuranceService.cpp" />
+    <ClCompile Include="ServiceCatalog.cpp" />
+    <ClCompile Include="TransferService.cpp" />
+    <ClCompile Include="TravelService.cpp" />
+    <ClCompile Include="VisaService.cpp" />
     <ClCompile Include="BusDriver.cpp" />
     <ClCompile Include="InsuranceSpecialist.cpp" />
     <ClCompile Include="Person.cpp" />
@@ -158,6 +168,7 @@
     <ClCompile Include="Voucher.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Services.h" />
     <ClInclude Include="Staff.h" />
     <ClInclude Include="TravelAgency.h" />
   </ItemGroup>
