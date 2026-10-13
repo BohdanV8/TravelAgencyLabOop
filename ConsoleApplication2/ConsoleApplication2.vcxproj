@@ -145,11 +145,20 @@
   <ItemGroup>
     <ClCompile Include="ConsoleApplication2.cpp" />
     <ClCompile Include="Booking.cpp" />
+    <ClCompile Include="BusDriver.cpp" />
+    <ClCompile Include="InsuranceSpecialist.cpp" />
+    <ClCompile Include="Person.cpp" />
     <ClCompile Include="Tourist.cpp" />
+    <ClCompile Include="TourGuide.cpp" />
+    <ClCompile Include="TourLeader.cpp" />
     <ClCompile Include="TravelAgency.cpp" />
+    <ClCompile Include="TravelAgent.cpp" />
+    <ClCompile Include="TravelConsultant.cpp" />
+    <ClCompile Include="VisaSpecialist.cpp" />
     <ClCompile Include="Voucher.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Staff.h" />
     <ClInclude Include="TravelAgency.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

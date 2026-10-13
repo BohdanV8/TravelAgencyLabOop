@@ -1,238 +1,175 @@
 #include <Windows.h>
 
-#include <cstdlib>
-#include <ctime>
-#include <fstream>
 #include <iostream>
 #include <string>
 
+#include "Staff.h"
 #include "TravelAgency.h"
 
 void PrintSection(const std::string& title) {
   std::cout << "\n========== " << title << " ==========\n";
 }
 
-void PrintCostPerDay(Tourist tourist) {
-  int days = tourist.voucher().duration_days;
-  if (days == 0) {
-    std::cout << tourist.full_name << " ще не має путівки\n";
-    return;
-  }
-  std::cout << "Вартість одного дня подорожі (об'єкт): " << tourist.full_name
-            << " - " << tourist.CalculateTotalCost() / days << "\n";
+void DemoAccessControl() {
+  PrintSection("Керування доступом: public, protected, private");
+  TourGuide guide("Олійник Андрій", 35, "+380-50-111-11-11", "GA111111",
+                  "guide@mail.com", "Львів", "англійська, італійська", 8,
+                  1500.0);
+  TravelAgent agent("Савченко Ірина", 29, "+380-50-222-22-22", "AG222222",
+                    "agent@mail.com", "Київ", "Офіс на Хрещатику", 25000.0);
+  BusDriver driver("Мороз Василь", 47, "+380-50-333-33-33", "DR333333",
+                   "driver@mail.com", "Київ", "AA1234BB", 30);
+
+  std::cout << "\nTourGuide - public: члени Person доступні ззовні\n";
+  std::cout << guide.full_name << ", " << guide.age << ", "
+            << guide.phone_number << "\n";
+  guide.Introduce();
+  std::cout << "Контакти: " << guide.GetContactInfo() << "\n";
+  std::cout << "Повнолітній: " << (guide.IsAdult() ? "так" : "ні") << "\n";
+  guide.ShowInheritedAccess();
+
+  std::cout << "\nTravelAgent - protected\n";
+  std::cout << "Через using: " << agent.full_name << "\n";
+  agent.Introduce();
+  agent.ShowInheritedAccess();
+
+  std::cout << "\nBusDriver - private\n";
+  std::cout << "Через власний метод: " << driver.name() << "\n";
+  driver.ShowInheritedAccess();
+
+  PrintSection("Вихід з функції DemoAccessControl");
 }
 
-void PrintCostPerDay(const Tourist* tourist) {
-  int days = tourist->voucher().duration_days;
-  if (days == 0) {
-    std::cout << tourist->full_name << " ще не має путівки\n";
-    return;
-  }
-  std::cout << "Вартість одного дня подорожі (адреса): " << tourist->full_name
-            << " - " << tourist->CalculateTotalCost() / days << "\n";
+void DemoPrivateInheritance() {
+  PrintSection("Закрите наслідування: TourLeader : private TourGuide");
+  TourLeader leader("Ткаченко Олена", 41, "+380-50-444-44-44", "TL444444",
+                    "leader@mail.com", "Одеса", "англійська, іспанська",
+                    "Сонячна Іспанія", 15);
+
+  std::cout << "\nМетод класу Person:\n";
+  leader.Introduce();
+  std::cout << "\nМетод класу TourGuide:\n";
+  leader.LeadTour("Іспанія");
+  std::cout << "\nВласні методи TourLeader:\n";
+  leader.HoldBriefing();
+  leader.DisplayInfo();
+
+  PrintSection("Вихід з функції DemoPrivateInheritance");
 }
 
-Voucher CreateInsuredVoucher(const std::string& country, int days,
-                             double price, bool visa_required,
-                             const std::string& dates, double insurance_cost) {
-  Voucher voucher(country, days, price, visa_required, dates);
-  voucher.AddInsurance(insurance_cost);
-  return voucher;
+void DemoScopeResolution() {
+  PrintSection("Оператор :: для доступу до членів базових класів");
+  TravelConsultant consultant("Гриценко Марина", 38, "+380-50-555-55-55",
+                              "TC555555", "consultant@mail.com", "Київ",
+                              "Уніка", 900.0, 1600.0, 500.0);
+
+  std::cout << "\nconsultant.Person::Introduce():\n";
+  consultant.Person::Introduce();
+  std::cout << "\nconsultant.InsuranceSpecialist::DisplayInfo():\n";
+  consultant.InsuranceSpecialist::DisplayInfo();
+  std::cout << "\nconsultant.VisaSpecialist::IsCountrySupported(\"Японія\"): "
+            << (consultant.VisaSpecialist::IsCountrySupported("Японія")
+                    ? "так"
+                    : "ні")
+            << "\n";
+
+  PrintSection("Вихід з функції DemoScopeResolution");
 }
 
-void DemoConstructors() {
-  PrintSection("Три способи створення об'єктів");
-  Tourist simple_tourist;
-  Tourist explicit_tourist = Tourist("Шевченко Тарас", 30, "AA111111");
-  Tourist short_tourist("Франко Іван", 40, "AA222222");
+void DemoConstructionOrder() {
+  PrintSection("Порядок конструкторів і деструкторів");
 
-  PrintSection("Конструктор копіювання");
-  Tourist copied_tourist(short_tourist);
-
-  PrintSection("Конструктори класу Voucher");
-  Voucher default_voucher;
-  Voucher param_voucher("Франція", 6, 20000.0, true, "03.10-09.10");
-  Voucher copied_voucher(param_voucher);
-
-  PrintSection("Вихід з функції DemoConstructors");
-}
-
-void DemoBlockTracking() {
-  PrintSection("Відстеження блоків програми");
-  std::cout << "Вхід у зовнішній блок\n";
-  Tourist outer_tourist("Зовнішній Турист", 33, "BB000001");
+  std::cout << "\nВхід у блок: просте наслідування (Person -> TourGuide)\n";
   {
-    std::cout << "Вхід у внутрішній блок\n";
-    Tourist inner_tourist("Внутрішній Турист", 22, "BB000002");
-    std::cout << "Вихід з внутрішнього блоку\n";
+    TourGuide guide("Блок Гід", 30, "+380-00-000-00-01", "BL000001",
+                    "block1@mail.com", "Київ", "англійська", 3, 1000.0);
+    std::cout << "Вихід з блоку\n";
   }
-  std::cout << "Вихід із зовнішнього блоку\n";
+
+  std::cout << "\nВхід у блок: два рівні (Person -> TourGuide -> "
+               "TourLeader)\n";
+  {
+    TourLeader leader("Блок Керівник", 45, "+380-00-000-00-02", "BL000002",
+                      "block2@mail.com", "Київ", "англійська", "Тестова", 10);
+    std::cout << "Вихід з блоку\n";
+  }
+
+  std::cout << "\nВхід у блок: множинне наслідування (TravelConsultant)\n";
+  {
+    TravelConsultant consultant("Блок Консультант", 33, "+380-00-000-00-03",
+                                "BL000003", "block3@mail.com", "Київ",
+                                "Уніка", 900.0, 1600.0, 500.0);
+    std::cout << "Вихід з блоку\n";
+  }
 }
 
-void DemoStaticMember() {
-  PrintSection("Статичне поле та статичний метод");
-  std::cout << "Туристів зараз: " << Tourist::AliveCount() << "\n";
-  Tourist first("Перший Турист", 20, "CC000001");
-  Tourist second("Другий Турист", 21, "CC000002");
-  std::cout << "Туристів зараз: " << Tourist::AliveCount() << "\n";
-}
-
-void DemoAssociation() {
-  PrintSection("Клас асоціації: агенція, турист, путівка");
+void RunAgencyScenario() {
+  PrintSection("Сценарій роботи туристичної агенції");
   TravelAgency agency("Світ мандрів");
-  Tourist tourist("Мельник Олена", 65, "DD000001");
-  Voucher voucher("Японія", 12, 40000.0, true, "01.11-12.11");
+  TravelAgent agent("Савченко Ірина", 29, "+380-50-222-22-22", "AG222222",
+                    "agent@mail.com", "Київ", "Офіс на Хрещатику", 25000.0);
+  TravelConsultant consultant("Гриценко Марина", 38, "+380-50-555-55-55",
+                              "TC555555", "consultant@mail.com", "Київ",
+                              "Уніка", 900.0, 1600.0, 500.0);
+  TourLeader leader("Ткаченко Олена", 41, "+380-50-444-44-44", "TL444444",
+                    "leader@mail.com", "Одеса", "англійська, італійська",
+                    "Італійські канікули", 2);
+  BusDriver driver("Мороз Василь", 47, "+380-50-333-33-33", "DR333333",
+                   "driver@mail.com", "Київ", "AA1234BB", 30);
 
-  Booking booking(agency, tourist, voucher);
-  booking.Confirm();
-  booking.DisplayInfo();
+  Tourist first_tourist("Іваненко Іван", 25, "AB123456");
+  Tourist second_tourist("Петренко Петро", 62, "AB234567");
+  Tourist third_tourist("Коваль Марія", 45, "AB456789");
+  Voucher italy_with_visa("Італія", 7, 15000.0, true, "01.06-08.06");
+  Voucher italy_without_visa("Італія", 7, 15000.0, false, "01.06-08.06");
+
+  PrintSection("Продаж путівок");
+  consultant.PrepareFullPackage(first_tourist, italy_with_visa);
+  agent.SellVoucher(second_tourist, italy_without_visa);
+  agent.SellVoucher(third_tourist, italy_without_visa);
+  agency.AddClient(&first_tourist);
+  agency.AddClient(&second_tourist);
+  agency.AddClient(&third_tourist);
+
+  PrintSection("Формування групи");
+  leader.AddTourist(first_tourist);
+  leader.AddTourist(second_tourist);
+  leader.AddTourist(third_tourist);
+  leader.HoldBriefing();
+
+  PrintSection("Трансфер і початок туру");
+  if (driver.CanTakeGroup(leader.group_size())) {
+    driver.DriveTransfer("Київ - аеропорт Бориспіль", 40.0);
+  }
+  leader.StartGroupTour("Італія");
+
+  PrintSection("Підсумки");
   agency.ShowClients();
-}
+  std::cout << "Дохід менеджера " << agent.full_name << ": "
+            << agent.CalculateMonthlyIncome() << "\n"
+            << "Дохід консультанта " << consultant.full_name << ": "
+            << consultant.CalculateTotalEarnings() << "\n"
+            << "Пальне, витрачене водієм " << driver.name() << ": "
+            << driver.CalculateFuelUsed() << " л\n";
 
-void DemoAggregation() {
-  PrintSection("Агрегація: агенція та турист");
-  Tourist tourist("Бондар Сергій", 28, "EE000001");
-  tourist.BookVoucher(Voucher("Чорногорія", 8, 14000.0, false, "02.07-10.07"));
-  {
-    TravelAgency agency("Тур-Експрес");
-    agency.AddClient(&tourist);
-    agency.ShowClients();
-  }
-  std::cout << "Агенції вже немає, а турист існує: " << tourist.full_name
-            << "\n";
-}
+  PrintSection("Інформація про працівників");
+  agent.DisplayInfo();
+  consultant.DisplayInfo();
+  driver.DisplayInfo();
 
-void DemoComposition() {
-  PrintSection("Композиція: турист та його путівка");
-  {
-    Tourist tourist("Кравченко Ірина", 31, "FF000001");
-    tourist.BookVoucher(Voucher("Португалія", 10, 22000.0, true,
-                                "15.05-25.05"));
-    std::cout << "Турист знищується разом із путівкою:\n";
-  }
-}
-
-void DemoArraysAndPointers() {
-  PrintSection("Масив туристів у статичній пам'яті");
-  Tourist static_tourists[5] = {
-      Tourist("Іваненко Іван", 25, "AB123456"),
-      Tourist("Петренко Петро", 62, "AB234567"),
-      Tourist("Сидоренко Оксана", 34, "AB345678"),
-      Tourist("Коваль Марія", 45, "AB456789"),
-      Tourist("Гончар Андрій", 19, "AB567890"),
-  };
-
-  PrintSection("Масив путівок у динамічній пам'яті");
-  Voucher* dynamic_vouchers[5] = {
-      new Voucher("Італія", 7, 15000.0, true, "01.06-08.06"),
-      new Voucher("Туреччина", 10, 12000.0, false, "10.07-20.07"),
-      new Voucher("Іспанія", 14, 25000.0, true, "01.08-15.08"),
-      new Voucher("Єгипет", 5, 9000.0, false, "05.09-10.09"),
-      new Voucher("Греція", 9, 18000.0, true, "12.09-21.09"),
-  };
-
-  PrintSection("Купівля путівок");
-  for (int i = 0; i < 5; ++i) {
-    static_tourists[i].set_phone_number("+380-00-000-00-0" +
-                                        std::to_string(i));
-    static_tourists[i].set_email("tourist" + std::to_string(i) + "@mail.com");
-    dynamic_vouchers[i]->ApplyDiscountForTourist(static_tourists[i]);
-    static_tourists[i].BookVoucher(*dynamic_vouchers[i]);
-  }
-
-  PrintSection("Інформація про туристів");
-  for (int i = 0; i < 5; ++i) {
-    static_tourists[i].DisplayInfo();
-    std::cout << "Вартість без знижки: "
-              << static_tourists[i].CalculateTotalCost() << "\n"
-              << "Вартість зі знижкою 10%: "
-              << static_tourists[i].CalculateTotalCost(10.0) << "\n";
-    static_tourists[i].ApplyForVisa();
-  }
-
-  PrintSection("Функції поза класом");
-  PrintCostPerDay(static_tourists[0]);
-  PrintCostPerDay(&static_tourists[1]);
-
-  PrintSection("Функція, що повертає об'єкт класу");
-  Voucher insured = CreateInsuredVoucher("Австрія", 6, 21000.0, true,
-                                         "20.12-26.12", 800.0);
-  insured.DisplayInfo();
-
-  PrintSection("Методи, що повертають об'єкт класу");
-  Tourist upgraded = static_tourists[0].UpgradeTourist("CD999999");
-  std::cout << "Оновлений паспорт туриста: " << upgraded.passport_number
-            << "\n";
-  Voucher combined = dynamic_vouchers[0]->CombineWith(*dynamic_vouchers[1]);
-  std::cout << "Об'єднана путівка: " << combined.duration_days
-            << " днів, ціна " << combined.base_price << "\n";
-
-  dynamic_vouchers[2]->AddInsurance(500.0);
-  std::cout << "Ціна путівки зі страхуванням: "
-            << dynamic_vouchers[2]->GetFinalPrice() << "\n"
-            << "Ціна путівки з додатковим збором 100: "
-            << dynamic_vouchers[2]->GetFinalPrice(100.0) << "\n";
-
-  PrintSection("Покажчики на об'єкти");
-  Tourist* tourist_ptr = &static_tourists[3];
-  std::cout << "Звернення через покажчик: " << tourist_ptr->full_name
-            << ", вік " << tourist_ptr->age << "\n";
-
-  Tourist* dynamic_tourist = new Tourist("Литвин Олег", 50, "GG000001");
-  dynamic_tourist->DisplayInfo();
-  delete dynamic_tourist;
-
-  Voucher* voucher_array = new Voucher[2];
-  voucher_array[0].country = "Польща";
-  voucher_array[1].country = "Чехія";
-  for (int i = 0; i < 2; ++i) {
-    voucher_array[i].DisplayInfo();
-  }
-  delete[] voucher_array;
-
-  PrintSection("Динамічна пам'ять та сортування");
-  static_tourists[0].GenerateAndSortRandomIds();
-  dynamic_vouchers[0]->GenerateAndSortRandomDurations();
-
-  PrintSection("Запис у файл та читання з файлу");
-  std::ofstream out_file("tourists_data.txt");
-  if (out_file.is_open()) {
-    for (int i = 0; i < 5; ++i) {
-      static_tourists[i].SaveToFile(out_file);
-    }
-    out_file.close();
-    std::cout << "Дані туристів збережено у tourists_data.txt\n";
-  }
-
-  std::ifstream in_file("tourists_data.txt");
-  if (in_file.is_open()) {
-    Tourist loaded_tourist;
-    loaded_tourist.LoadFromFile(in_file);
-    in_file.close();
-    std::cout << "Зчитаний з файлу турист:\n";
-    loaded_tourist.DisplayInfo();
-  }
-
-  PrintSection("Звільнення пам'яті");
-  for (int i = 0; i < 5; ++i) {
-    delete dynamic_vouchers[i];
-  }
+  PrintSection("Вихід з функції RunAgencyScenario");
 }
 
 int main() {
   SetConsoleCP(65001);
   SetConsoleOutputCP(65001);
-  std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-  DemoConstructors();
-  DemoBlockTracking();
-  DemoStaticMember();
-  DemoAssociation();
-  DemoAggregation();
-  DemoComposition();
-  DemoArraysAndPointers();
+  DemoAccessControl();
+  DemoPrivateInheritance();
+  DemoScopeResolution();
+  DemoConstructionOrder();
+  RunAgencyScenario();
 
   PrintSection("Кінець програми");
-  std::cout << "Туристів зараз: " << Tourist::AliveCount() << "\n";
   return 0;
 }
