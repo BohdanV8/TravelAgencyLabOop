@@ -12,6 +12,7 @@
 #include "Excursion.h"
 #include "Services.h"
 #include "Staff.h"
+#include "StlDemos.h"
 #include "TravelAgency.h"
 
 void PrintSection(const std::string& title) {
@@ -603,6 +604,10 @@ int main(int argc, char* argv[]) {
   DemoOtherOperators(catalog);
   DemoTemplateFunction(catalog);
   DemoClassTemplate();
+  DemoContainers(static_services, kStaticCount);
+  DemoIterators();
+  DemoAlgorithms();
+  DemoFunctors();
   DemoServiceMethods(catalog);
 
   try {

@@ -17,6 +17,7 @@ class Excursion {
 
   Excursion operator+(const Excursion& other) const;
   bool operator==(const Excursion& other) const;
+  bool operator<(const Excursion& other) const;
 
   friend std::ostream& operator<<(std::ostream& out,
                                   const Excursion& excursion);

@@ -31,6 +31,16 @@ bool Excursion::operator==(const Excursion& other) const {
   return title_ == other.title_ && city_ == other.city_;
 }
 
+bool Excursion::operator<(const Excursion& other) const {
+  if (price_ != other.price_) {
+    return price_ < other.price_;
+  }
+  if (title_ != other.title_) {
+    return title_ < other.title_;
+  }
+  return city_ < other.city_;
+}
+
 std::ostream& operator<<(std::ostream& out, const Excursion& excursion) {
   return out << "\"" << excursion.title_ << "\" (" << excursion.city_ << ", "
              << excursion.hours_ << " год, " << excursion.price_ << " грн)";

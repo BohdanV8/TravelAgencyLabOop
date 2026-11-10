@@ -167,6 +167,8 @@
     <ClCompile Include="VisaSpecialist.cpp" />
     <ClCompile Include="Voucher.cpp" />
     <ClCompile Include="Excursion.cpp" />
+    <ClCompile Include="Functors.cpp" />
+    <ClCompile Include="StlDemos.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Services.h" />
@@ -174,6 +176,8 @@
     <ClInclude Include="TravelAgency.h" />
     <ClInclude Include="Excursion.h" />
     <ClInclude Include="Collection.h" />
+    <ClInclude Include="Functors.h" />
+    <ClInclude Include="StlDemos.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
