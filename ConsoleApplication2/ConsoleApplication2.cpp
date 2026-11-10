@@ -3,12 +3,16 @@
 #include <cstddef>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <new>
 #include <stdexcept>
 #include <string>
 
+#include "Collection.h"
+#include "Excursion.h"
 #include "Services.h"
 #include "Staff.h"
+#include "TravelAgency.h"
 
 void PrintSection(const std::string& title) {
   std::cout << "\n========== " << title << " ==========\n";
@@ -106,8 +110,9 @@ void DemoMemoryErrors(ServiceCatalog& catalog) {
   PrintSection("Виключні ситуації: динамічна пам'ять");
 
   try {
-    const std::size_t kHugeCount = std::size_t{1} << 50;
-    double* buffer = new double[kHugeCount];
+    volatile std::size_t huge_count = (std::numeric_limits<std::size_t>::max)() / 16;
+    std::size_t count = huge_count;
+    double* buffer = new double[count];
     delete[] buffer;
   } catch (const std::bad_alloc& error) {
     std::cout << "Помилка виділення пам'яті: " << error.what() << "\n";
@@ -129,6 +134,196 @@ void DemoMemoryErrors(ServiceCatalog& catalog) {
     catalog.AddDynamic(
         new VisaService("Зайва віза", 500.0, "Греція", false));
   } catch (const std::overflow_error& error) {
+    PrintError(error);
+  }
+}
+
+void PrintVoucher(const std::string& label, const Voucher& voucher) {
+  std::cout << label << ": путівка #" << voucher.voucher_id() << " ("
+            << voucher.country << "), " << voucher.duration_days
+            << " днів, ціна " << voucher.base_price << "\n";
+}
+
+void DemoUnaryOperators() {
+  PrintSection("Унарні оператори ++ та -- (Voucher)");
+  Voucher voucher("Італія", 7, 20000.0, true, "01.06 - 08.06");
+  PrintVoucher("Початкова", voucher);
+
+  ++voucher;
+  PrintVoucher("Після ++voucher", voucher);
+  Voucher before_increment = voucher++;
+  PrintVoucher("Результат voucher++ (старе значення)", before_increment);
+  PrintVoucher("Сама путівка після voucher++", voucher);
+
+  --voucher;
+  PrintVoucher("Після --voucher", voucher);
+  Voucher before_decrement = voucher--;
+  PrintVoucher("Результат voucher-- (старе значення)", before_decrement);
+  PrintVoucher("Сама путівка після voucher--", voucher);
+
+  Voucher one_day_trip("Польща", 1, 3000.0, false, "10.07");
+  try {
+    --one_day_trip;
+  } catch (const std::logic_error& error) {
+    PrintError(error);
+  }
+}
+
+void DemoBinaryOperators() {
+  PrintSection("Бінарні оператори + та - (Voucher)");
+  Voucher italy("Італія", 7, 20000.0, true, "01.06 - 08.06");
+  Voucher greece("Греція", 5, 15000.0, true, "08.06 - 13.06");
+
+  Voucher combined = italy + greece;
+  PrintVoucher("italy + greece", combined);
+  std::cout << "Дати комбінованої путівки: " << combined.travel_dates()
+            << "\n";
+
+  Voucher discounted = italy - 2500.0;
+  PrintVoucher("italy - 2500", discounted);
+
+  try {
+    PrintVoucher("italy - 50000", italy - 50000.0);
+  } catch (const std::invalid_argument& error) {
+    PrintError(error);
+  }
+}
+
+void DemoOtherOperators(ServiceCatalog& catalog) {
+  PrintSection("Оператори *, =, +=, -=, *= (Voucher)");
+  Voucher spain("Іспанія", 10, 25000.0, true, "15.08 - 25.08");
+
+  Voucher family = spain * 3;
+  PrintVoucher("spain * 3 (путівка на трьох)", family);
+
+  Voucher copy;
+  copy = spain;
+  PrintVoucher("copy = spain", copy);
+
+  copy += Voucher("Португалія", 4, 9000.0, true, "25.08 - 29.08");
+  PrintVoucher("copy += Португалія", copy);
+
+  copy -= 4000.0;
+  PrintVoucher("copy -= 4000", copy);
+
+  copy *= 1.1;
+  PrintVoucher("copy *= 1.1", copy);
+
+  try {
+    copy *= 0;
+  } catch (const std::invalid_argument& error) {
+    PrintError(error);
+  }
+
+  PrintSection("Оператор [] (ServiceCatalog)");
+  std::cout << "catalog[0]:\n";
+  catalog[0].DisplayInfo();
+  std::cout << "catalog[2]:\n";
+  catalog[2].DisplayInfo();
+
+  try {
+    catalog[100].DisplayInfo();
+  } catch (const std::out_of_range& error) {
+    PrintError(error);
+  }
+}
+
+void DemoTemplateFunction(const ServiceCatalog& catalog) {
+  PrintSection("Шаблонна функція ServiceCatalog::CountOfType<T>()");
+  std::cout << "Усі послуги (TravelService): "
+            << catalog.CountOfType<TravelService>() << "\n"
+            << "Страхування (InsuranceService): "
+            << catalog.CountOfType<InsuranceService>() << "\n"
+            << "Візові послуги (VisaService): "
+            << catalog.CountOfType<VisaService>() << "\n"
+            << "Трансфери (TransferService): "
+            << catalog.CountOfType<TransferService>() << "\n"
+            << "Повні пакети (FullPackageService): "
+            << catalog.CountOfType<FullPackageService>() << "\n"
+            << "Повний пакет рахується і як страхування, і як віза, бо "
+               "наслідує обидва класи\n";
+}
+
+void DemoClassTemplate() {
+  PrintSection("Шаблон класу Collection<int>");
+  Collection<int> durations("Тривалості турів, днів", 2);
+  durations.Add(7);
+  durations.Add(10);
+  durations.Add(14);
+  durations.Print();
+  std::cout << "Сума днів (Total): " << durations.Total() << "\n";
+  std::cout << "Чи є тур на 10 днів (Contains): "
+            << (durations.Contains(10) ? "так" : "ні") << "\n";
+  durations[0] = 8;
+  durations.RemoveAt(1);
+  std::cout << "Змінено [0] на 8 та видалено [1], видалене значення: "
+            << durations.LastRemoved() << "\n";
+  durations.Print();
+
+  PrintSection("Шаблон класу Collection<double>");
+  Collection<double> prices("Ціни турів, грн", 3);
+  prices.Add(20000.5);
+  prices.Add(15000.0);
+  prices.Add(9999.5);
+  prices.Print();
+  std::cout << "Сума цін (Total): " << prices.Total() << "\n";
+
+  PrintSection("Шаблон класу Collection<std::string>");
+  Collection<std::string> countries("Країни", 3);
+  countries.Add("Італія");
+  countries.Add("Греція");
+  countries.Add("Іспанія");
+  countries.Print();
+  std::cout << "Чи є Греція (Contains): "
+            << (countries.Contains("Греція") ? "так" : "ні") << "\n";
+
+  PrintSection("Шаблон класу з користувацьким типом Collection<Excursion>");
+  Collection<Excursion> excursions("Екскурсії", 2);
+  excursions.Add(Excursion("Колізей", "Рим", 450.0, 3.0));
+  excursions.Add(Excursion("Ватикан", "Рим", 600.0, 4.0));
+  excursions.Add(Excursion("Помпеї", "Неаполь", 800.0, 6.0));
+  excursions.Print();
+  std::cout << "Загальна екскурсія (Total): " << excursions.Total() << "\n";
+  std::cout << "Чи є екскурсія до Ватикану (Contains): "
+            << (excursions.Contains(Excursion("Ватикан", "Рим", 600.0, 4.0))
+                    ? "так"
+                    : "ні")
+            << "\n";
+  excursions[0] = Excursion("Колізей і Форум", "Рим", 550.0, 4.0);
+  excursions.RemoveAt(1);
+  std::cout << "Видалена екскурсія (LastRemoved): "
+            << excursions.LastRemoved() << "\n";
+  excursions.Print();
+
+  PrintSection("Виключні ситуації шаблону Collection<T>");
+  try {
+    Collection<int> wrong("Неправильна колекція", 0);
+  } catch (const std::invalid_argument& error) {
+    PrintError(error);
+  }
+
+  try {
+    Collection<double> empty("Порожні ціни", 1);
+    std::cout << empty.Total() << "\n";
+  } catch (const std::runtime_error& error) {
+    PrintError(error);
+  }
+
+  try {
+    std::cout << excursions[10] << "\n";
+  } catch (const std::out_of_range& error) {
+    PrintError(error);
+  }
+
+  try {
+    std::cout << countries.LastRemoved() << "\n";
+  } catch (const std::logic_error& error) {
+    PrintError(error);
+  }
+
+  try {
+    excursions.Add(Excursion("Неправильна", "Київ", -100.0, 2.0));
+  } catch (const std::invalid_argument& error) {
     PrintError(error);
   }
 }
@@ -403,6 +598,11 @@ int main(int argc, char* argv[]) {
   DemoVirtualBypass(package);
   DemoOwnVirtualFunctions(insurance, visa, transfer, package);
   DemoMemoryErrors(catalog);
+  DemoUnaryOperators();
+  DemoBinaryOperators();
+  DemoOtherOperators(catalog);
+  DemoTemplateFunction(catalog);
+  DemoClassTemplate();
   DemoServiceMethods(catalog);
 
   try {

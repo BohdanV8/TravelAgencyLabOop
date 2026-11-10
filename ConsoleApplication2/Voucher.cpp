@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <stdexcept>
 
 #include "TravelAgency.h"
 
@@ -86,11 +87,89 @@ void Voucher::ApplyDiscountForTourist(const Tourist& tourist) {
 }
 
 Voucher Voucher::CombineWith(const Voucher& other) const {
+  return *this + other;
+}
+
+Voucher& Voucher::operator=(const Voucher& other) {
+  if (this == &other) {
+    return *this;
+  }
+  country = other.country;
+  duration_days = other.duration_days;
+  base_price = other.base_price;
+  insurance_cost_ = other.insurance_cost_;
+  has_insurance_ = other.has_insurance_;
+  visa_required_ = other.visa_required_;
+  travel_dates_ = other.travel_dates_;
+  std::cout << "[Voucher #" << voucher_id_ << "] operator= з путівки #"
+            << other.voucher_id_ << "\n";
+  return *this;
+}
+
+Voucher& Voucher::operator++() {
+  ++duration_days;
+  return *this;
+}
+
+Voucher Voucher::operator++(int) {
+  Voucher previous(*this);
+  ++*this;
+  return previous;
+}
+
+Voucher& Voucher::operator--() {
+  if (duration_days <= 1) {
+    throw std::logic_error("тривалість путівки не може бути меншою за 1 день");
+  }
+  --duration_days;
+  return *this;
+}
+
+Voucher Voucher::operator--(int) {
+  Voucher previous(*this);
+  --*this;
+  return previous;
+}
+
+Voucher Voucher::operator+(const Voucher& other) const {
   Voucher combined(*this);
-  combined.duration_days += other.duration_days;
-  combined.base_price += other.base_price;
-  combined.travel_dates_ = travel_dates_ + " + " + other.travel_dates_;
+  combined += other;
   return combined;
+}
+
+Voucher Voucher::operator-(double discount) const {
+  Voucher discounted(*this);
+  discounted -= discount;
+  return discounted;
+}
+
+Voucher Voucher::operator*(double factor) const {
+  Voucher multiplied(*this);
+  multiplied *= factor;
+  return multiplied;
+}
+
+Voucher& Voucher::operator+=(const Voucher& other) {
+  duration_days += other.duration_days;
+  base_price += other.base_price;
+  travel_dates_ += " + " + other.travel_dates_;
+  return *this;
+}
+
+Voucher& Voucher::operator-=(double discount) {
+  if (discount < 0 || discount > base_price) {
+    throw std::invalid_argument("знижка має бути від 0 до ціни путівки");
+  }
+  base_price -= discount;
+  return *this;
+}
+
+Voucher& Voucher::operator*=(double factor) {
+  if (factor <= 0) {
+    throw std::invalid_argument("множник ціни має бути більшим за 0");
+  }
+  base_price *= factor;
+  return *this;
 }
 
 void Voucher::AddInsurance(double cost) {

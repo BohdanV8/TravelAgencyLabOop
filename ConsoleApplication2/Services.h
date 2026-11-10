@@ -142,6 +142,12 @@ class ServiceCatalog {
   int Service_Dinamic(double max_price);
   void ShowAll() const;
 
+  TravelService& operator[](int index);
+  const TravelService& operator[](int index) const;
+
+  template <typename T>
+  int CountOfType() const;
+
  private:
   TravelService* static_services_[kStaticCapacity] = {};
   int static_count_ = 0;
@@ -149,5 +155,21 @@ class ServiceCatalog {
   int dynamic_capacity_;
   int dynamic_count_ = 0;
 };
+
+template <typename T>
+int ServiceCatalog::CountOfType() const {
+  int count = 0;
+  for (int i = 0; i < static_count_; ++i) {
+    if (dynamic_cast<const T*>(static_services_[i]) != nullptr) {
+      ++count;
+    }
+  }
+  for (int i = 0; i < dynamic_count_; ++i) {
+    if (dynamic_cast<const T*>(dynamic_services_[i]) != nullptr) {
+      ++count;
+    }
+  }
+  return count;
+}
 
 #endif  // TRAVEL_AGENCY_SERVICES_H_

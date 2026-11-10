@@ -20,6 +20,18 @@ class Voucher {
   Voucher(const Voucher& other);
   ~Voucher();
 
+  Voucher& operator=(const Voucher& other);
+  Voucher& operator++();
+  Voucher operator++(int);
+  Voucher& operator--();
+  Voucher operator--(int);
+  Voucher operator+(const Voucher& other) const;
+  Voucher operator-(double discount) const;
+  Voucher operator*(double factor) const;
+  Voucher& operator+=(const Voucher& other);
+  Voucher& operator-=(double discount);
+  Voucher& operator*=(double factor);
+
   double insurance_cost() const;
   bool has_insurance() const;
   bool visa_required() const;

@@ -94,6 +94,22 @@ int ServiceCatalog::Service_Dinamic(double max_price) {
   return removed;
 }
 
+TravelService& ServiceCatalog::operator[](int index) {
+  if (index < 0 || index >= dynamic_count_) {
+    throw std::out_of_range("індекс " + std::to_string(index) +
+                            " поза межами каталогу");
+  }
+  return *dynamic_services_[index];
+}
+
+const TravelService& ServiceCatalog::operator[](int index) const {
+  if (index < 0 || index >= dynamic_count_) {
+    throw std::out_of_range("індекс " + std::to_string(index) +
+                            " поза межами каталогу");
+  }
+  return *dynamic_services_[index];
+}
+
 void ServiceCatalog::ShowAll() const {
   std::cout << "Статичні послуги (" << static_count_ << "):\n";
   for (int i = 0; i < static_count_; ++i) {

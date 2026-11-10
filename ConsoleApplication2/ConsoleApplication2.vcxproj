@@ -166,11 +166,14 @@
     <ClCompile Include="TravelConsultant.cpp" />
     <ClCompile Include="VisaSpecialist.cpp" />
     <ClCompile Include="Voucher.cpp" />
+    <ClCompile Include="Excursion.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Services.h" />
     <ClInclude Include="Staff.h" />
     <ClInclude Include="TravelAgency.h" />
+    <ClInclude Include="Excursion.h" />
+    <ClInclude Include="Collection.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
